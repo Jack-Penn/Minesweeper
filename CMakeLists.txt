@@ -8,8 +8,8 @@ project(Minesweeper)
 # set(SFML_STATIC_LIBRARIES TRUE)
 
 ## In most cases better set in the CMake cache
-set(SFML_DIR "C:/SFML-2.5.1/lib/cmake/SFML")
+set(SFML_DIR "C:/SFML-2.6.2/lib/cmake/SFML")
 
-find_package(SFML 2.5.1 COMPONENTS system window graphics audio REQUIRED)
+find_package(SFML 2.6.2 COMPONENTS system window graphics audio REQUIRED)
 add_executable(Minesweeper main.cpp)
 target_link_libraries(Minesweeper sfml-system sfml-window sfml-graphics sfml-audio)
