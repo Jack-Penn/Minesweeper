@@ -15,6 +15,9 @@ class ScreenShaker final : public Animatable {
       else
         throw std::runtime_error("Window Shaker doesn't have a window specified");
     }
+    bool isAnimationOver() const override {
+      return getAge() > _duration;
+    }
     void startShake(sf::RenderWindow* window, const unsigned int& duration, const unsigned int& intensity) {
       _window = window;
       resetAge();

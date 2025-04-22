@@ -11,5 +11,8 @@ project(Minesweeper)
 set(SFML_DIR "C:/SFML-2.6.2/lib/cmake/SFML")
 
 find_package(SFML 2.6.2 COMPONENTS system window graphics audio REQUIRED)
-add_executable(Minesweeper main.cpp)
+
+set(SOURCES main.cpp util.cpp TextureLoader.cpp Game/Game.cpp Game/Tile.cpp Animation/Animatable.cpp Animation/PhysicsAnimatable.cpp)
+
+add_executable(Minesweeper ${SOURCES})
 target_link_libraries(Minesweeper sfml-system sfml-window sfml-graphics sfml-audio)
