@@ -4,8 +4,8 @@
 #include <random>
 #include "SpriteAnimation.h"
 #include "ScreenShaker.h"
-#include "../TextureLoader.h"
 #include "PhysicsAnimatable.h"
+#include "Explosion.h"
 #include "../util.h"
 
 class AnimatedCharBomb final : public PhysicsAnimatable {
@@ -23,23 +23,21 @@ private:
    sf::Text _text;
 
     int _lifespan;
-
-   static sf::Texture* _explosionSpritesheet;
-   SpriteAnimation *_explosionSprite;
+  
+   Explosion *_explosion;
    bool _isExploding = false;
 
   sf::RenderWindow* _window;
-   static std::mt19937 number_generator;
 };
 
-ScreenShaker AnimatedCharBomb::explosionShaker([](const float intensity, const float progress) {
+ScreenShaker AnimatedCharBomb::explosionShaker([](const float intensity, const float progress) -> sf::Vector2i {
   static std::uniform_real_distribution<float> offset_dist(-1.0f, 1.0f);
-  const float offsetX = offset_dist(AnimatedCharBomb::number_generator) * intensity;
-  const float offsetY = offset_dist(AnimatedCharBomb::number_generator) * intensity;
-  return sf::Vector2i(offsetX,offsetY);
+  const int offsetX = std::floor(offset_dist(number_generator) * intensity);
+  const int offsetY = std::floor(offset_dist(number_generator) * intensity);
+  return {offsetX,offsetY};
 }, 50);
-sf::Texture* AnimatedCharBomb::_explosionSpritesheet = TextureLoader::loadTexture("explosion.png");
-std::mt19937 AnimatedCharBomb::number_generator(3504);
+
+
 
 
 AnimatedCharBomb::AnimatedCharBomb(const char character, const sf::Font& font, const int charSize, const sf::Vector2f position, sf::RenderWindow* window)
@@ -49,15 +47,13 @@ AnimatedCharBomb::AnimatedCharBomb(const char character, const sf::Font& font, c
 
     _velocity = randomVector(300, 600, -150, -30);
 
-    _explosionSprite = new SpriteAnimation(*_explosionSpritesheet, 192, 500, false);
-    _explosionSprite->sprite.setScale(0.5f, 0.5f);
-    _explosionSprite->centerSprite({-30, -30});
-    static std::uniform_int_distribution<> explosion_rotation_distribution(0, 360);
-    _explosionSprite->sprite.setRotation(explosion_rotation_distribution(number_generator));
+    _explosion = new Explosion();
 
     const sf::Vector2u windowSize = _window->getSize();
     _bounds = sf::IntRect(0,0,windowSize.x,windowSize.y);
     _boundsCollide = true;
+
+    _text.setColor(sf::Color::Yellow);
 }
 
 sf::Vector2u AnimatedCharBomb::getSize() const{
@@ -66,7 +62,7 @@ sf::Vector2u AnimatedCharBomb::getSize() const{
 
 void AnimatedCharBomb::update() {
   if (_isExploding) {
-    _explosionSprite->update();
+    _explosion->update();
   } else {
     PhysicsAnimatable::update();
     _text.setPosition(_position);
@@ -77,12 +73,12 @@ void AnimatedCharBomb::update() {
     const int beepInterval = 1000 * 1000 / current_age;
     _text.setFillColor(current_age % beepInterval > beepInterval / 2
                            ? sf::Color::Red
-                           : sf::Color::White);
+                           : sf::Color::Yellow);
 
     if (current_age > _lifespan) {
       _isExploding = true;
-      _explosionSprite->sprite.setPosition(_position);
-      _explosionSprite->resetAge();
+      _explosion->setPosition(_position);
+      _explosion->resetAge();
       explosionShaker.startShake(_window, 1000, 20);
     }
   }
@@ -91,12 +87,12 @@ void AnimatedCharBomb::update() {
 inline void AnimatedCharBomb::draw(sf::RenderTarget &target, const sf::RenderStates states) const {
     if (isAnimationOver()) return;
     if (_isExploding) {
-      target.draw(*_explosionSprite, states);
+      target.draw(*_explosion, states);
     }
     else
       target.draw(_text, states);
 }
 
 bool AnimatedCharBomb::isAnimationOver() const {
-  return _isExploding && _explosionSprite->isAnimationOver();
+  return _isExploding && _explosion->isAnimationOver();
 }

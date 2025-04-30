@@ -1,15 +1,17 @@
 #include "Tile.h"
 
+#include "../Animation/Delay.h"
+#include "../Animation/Explosion.h"
 #include "../Animation/PhysicsSprite.h"
 #include "../Animation/SpriteAnimation.h"
-#include "../Animation/Delay.h"
 #include "../TextureLoader.h"
-#include "Game.h"
 #include "../Windows/GameWindow.h"
 #include "../util.h"
+#include "Game.h"
 
 Tile::Tile(Game* game, const unsigned short row, const unsigned short col, const unsigned int width): _game(game), _row(row), _col(col), _size(width) {
   _tile.setTexture(*tile_hidden);
+  _flag.setTexture(*flag);
   setPosition(col*width, row*width);
   setSize(width);
 }
@@ -23,18 +25,30 @@ int Tile::getCol() const {
 
 void Tile::setPosition(float x, float y) {
   _tile.setPosition(x, y);
+  _flag.setPosition(x, y);
   _overlay.setPosition(x, y);
 }
 void Tile::setSize(float w) {
   const auto textureWidth = static_cast<float>(tile_hidden->getSize().x);
   _tile.setScale(w/textureWidth, w/textureWidth);
+  _flag.setScale(w/textureWidth, w/textureWidth);
   _overlay.setScale(w/textureWidth, w/textureWidth);
 }
 
 void Tile::draw(sf::RenderTarget& target, sf::RenderStates states) const{
+  if (_game->window->isPauseActive) {
+    sf::Sprite temp(_tile);
+    temp.setTexture(*tile_revealed);
+    target.draw(temp, states);
+    return;
+  }
+
   target.draw(_tile, states);
-  if (_isFlagged || _isRevealed && _overlay.getTexture())
+  if (_isFlagged)
+    target.draw(_flag, states);
+  if ((_isRevealed && _adjacentMines != 0) || (_isMine && _game->window->isDebugActive))
     target.draw(_overlay, states);
+
 }
 
 void Tile::addMine() {
@@ -63,10 +77,6 @@ bool Tile::getIsMine() const {
 
 bool Tile::toggleFlagged() {
   _isFlagged = !_isFlagged;
-  if (_isFlagged)
-    _overlay.setTexture(*flag);
-  else
-    _setNumberOverlay();
   return _isFlagged;
 }
 
@@ -76,19 +86,23 @@ bool Tile::getIsFlagged() const {
 
 void Tile::reveal() {
   _isRevealed = true;
-  _game->pushAnimatable(new PhysicsSprite(_tile, randomVector(100, 300,{{-150,-30}}), sf::IntRect({0,0}, sf::Vector2i(_game->window->getSize()))));
   _tile.setTexture(*tile_revealed);
 
   if (_isMine) {
-    const auto explosion = new SpriteAnimation(*explosionSpritesheet, 192, 500, false);
-    explosion->centerSprite({-30, -30});
-    explosion->sprite.setPosition(_tile.getPosition());
-    _game->pushAnimatable(explosion);
+    _game->pushAnimatable(new Explosion(_tile.getPosition()));
 
-    std::cout << "Over: " << !_game->isOver;
     if (!_game->isOver)
       _game->lose(_row, _col);
-  } else if (_adjacentMines == 0) {
+  } else {
+    if (!_game->isOver) {
+      _game->hiddenTiles--;
+      if (_game->hiddenTiles == 0) {
+        _game->win();
+      }
+    }
+
+    if (_adjacentMines == 0 && !_game->window->isPauseActive) {
+      _game->pushAnimatable(new PhysicsSprite(_tile, randomVector(100, 300,{{-150,-30}}), sf::IntRect({0,0}, sf::Vector2i(_game->window->getSize()))));
       _game->forEachAdjacentTile([this](Tile& adjTile) {
        if (!adjTile._isMine && !adjTile._isFlagged && !adjTile._isRevealed) {
          adjTile._isRevealed = true;
@@ -99,6 +113,7 @@ void Tile::reveal() {
      }, _row, _col);
     }
   }
+  }
 
 bool Tile::getIsRevealed() const {
   return  _isRevealed;
@@ -107,8 +122,6 @@ bool Tile::getIsRevealed() const {
 void Tile::_setNumberOverlay() {
   if (_adjacentMines)
     _overlay.setTexture(*numbers[_adjacentMines-1]);
-  else
-    _overlay.setTexture(*sf::Sprite().getTexture());
 }
 
 sf::Texture* Tile::tile_hidden = TextureLoader::loadTexture("tile_hidden.png");

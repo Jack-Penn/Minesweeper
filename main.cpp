@@ -28,14 +28,16 @@ int main() {
     if (!font.loadFromFile("../files/font.ttf"))
       std::cout << "Error loading font" << std::endl;
 
-    WelcomeWindow welcome_window(numCols * 32, numRows*32 + 100, font);
+    bool wasClosed = false;
+    WelcomeWindow welcome_window(numCols * 32, numRows*32 + 100, font, [&] {
+      wasClosed = true;
+    });
     welcome_window.focus();
+    if (wasClosed) return 0;
 
     std::cout << "Submitted Name: " << welcome_window.player_name << std::endl;
 
-    GameWindow gameWindow(numCols * 32, numRows*32 + 100, font);
-    Game game(&gameWindow, numCols, numRows, numMines);
-    gameWindow.setGame(&game);
+    GameWindow gameWindow(numCols, numRows, numMines, font, welcome_window.player_name);
     gameWindow.focus();
     return 0;
 }

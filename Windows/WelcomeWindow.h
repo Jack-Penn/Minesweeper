@@ -11,8 +11,13 @@
 class WelcomeWindow final: public Window {
   public: WelcomeWindow(const int width,
     const int height,
-      const sf::Font & font): Window(width, height, sf::Color::Blue, "Welcome", "mine.png", {
-    {
+      const sf::Font & font, const std::function<void()>& onClose): Window(width, height, sf::Color::Blue, "Welcome", "mine.png", {
+{
+      sf::Event::Closed, [&](const sf::Event) {
+        onClose();
+      }
+    },
+        {
       sf::Event::KeyPressed, [ & ](const sf::Event & event) {
         switch (event.key.code) {
         case sf::Keyboard::Enter:

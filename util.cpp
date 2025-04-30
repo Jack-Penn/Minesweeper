@@ -5,8 +5,6 @@
 #include <numeric>
 #include <random>
 
-std::mt19937 number_generator(3504);
-
 sf::Vector2f randomVector(float minMag, float maxMag, float minAngle, float maxAngle) {
   std::uniform_real_distribution<> magnitude_distribution(minMag, maxMag);
   std::uniform_real_distribution<> angle_distribution(minAngle, maxAngle);
@@ -46,3 +44,11 @@ void setTextCenter(sf::Text &text, const float x, const float y) {
   text.setOrigin(textRect.width / 2.0f, textRect.height / 2.0f);
   text.setPosition(sf::Vector2f(x, y));
 }
+
+int timeToMilliseconds(const std::string& time) {
+  int minutes = std::stoi(time.substr(0, 2));
+  int seconds = std::stoi(time.substr(3, 2));
+  return (minutes * 60 + seconds) * 1000;
+}
+
+std::mt19937 number_generator(std::time(nullptr));

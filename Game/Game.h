@@ -1,9 +1,10 @@
 #pragma once
 #include "../Animation/Animatable.h"
 #include "../Animation/AnimationList.h"
+#include "../Animation/ScreenShaker.h"
+
 #include <SFML/Graphics.hpp>
 #include <functional>
-#include <unordered_set>
 
 class Tile;
 class GameWindow;
@@ -14,6 +15,8 @@ public:
   void handleTileClick(const sf::Vector2i& position,
                      const sf::Mouse::Button& button);
   void forEachAdjacentTile(const std::function<void(Tile&)>& callback, int row, int col) const;
+
+  void win();
   void lose( int row, int col);
   // void recurseAdjacentTiles(const std::function<void(Tile&, int)>& callback, int row, int col);
 
@@ -24,15 +27,21 @@ public:
   GameWindow* window;
 
   bool isOver = false;
+
+  unsigned short hiddenTiles;
+
+
 private:
   Tile*** _grid;
   unsigned short _rows;
   unsigned short _cols;
   unsigned short _totalMines;
 
+
   bool _isFirstTileRevealed = false;
 
   AnimationList<> _animations;
+  ScreenShaker* _explosionShaker;
 
   void placeRandomMines(int mineCount) const;
   // void _recurseFunction(std::unordered_set<Tile*>& visited, Tile& tile, const std::function<void(Tile&, int)>& callback);

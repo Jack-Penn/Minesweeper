@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <functional>
+#include "../TextureLoader.h"
 
 class Button: public sf::Sprite {
 public:

@@ -63,10 +63,4 @@ class ScreenShaker final : public Animatable {
      sf::Vector2i _originalPosition;
 
     shakeFunType _shakeFun;
-
-     static std::mt19937 number_generator;
-     static std::uniform_real_distribution<float> offset_dist;
 };
-
-std::mt19937 ScreenShaker::number_generator(3504);
-std::uniform_real_distribution<float> ScreenShaker::offset_dist(-1.0f, 1.0f);

@@ -1,3 +1,4 @@
+#pragma once
 #include "Animatable.h"
 
 class Delay: public Animatable {

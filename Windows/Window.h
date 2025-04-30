@@ -4,10 +4,11 @@
 #include "../TextureLoader.h"
 
 using EventCallbackType = std::function<void(sf::Event)>;
-class Window: protected sf::RenderWindow {
+class Window: public sf::RenderWindow {
   public:
     Window(const int width, const int height, const sf::Color backgroundColor, const char name[], const char iconFilename[], const std::map<sf::Event::EventType, EventCallbackType>& eventCallbacks = {})
-        : RenderWindow(sf::VideoMode(width, height), name,sf::Style::Titlebar | sf::Style::Close), _name(name), _bgColor(backgroundColor), eventCallbacks(eventCallbacks) {
+        : RenderWindow(sf::VideoMode(width, height), name,
+                       sf::Style::Titlebar | sf::Style::Close), eventCallbacks(eventCallbacks), _name(name), _bgColor(backgroundColor) {
 
       sf::Image icon = TextureLoader::loadTexture(iconFilename)->copyToImage();
       const sf::Vector2u iconSize = icon.getSize();
@@ -25,10 +26,16 @@ class Window: protected sf::RenderWindow {
       display();
 
     while (isOpen()) {
-      sf::Event event;
+      sf::Event event{};
       while (pollEvent(event)) {
-        if(event.type == sf::Event::Closed) close();
-        for(auto [eventType, eventCallback] : eventCallbacks) {
+        if(event.type == sf::Event::Closed) {
+          close();
+          auto it = eventCallbacks.find(sf::Event::Closed);
+          if (it != eventCallbacks.end()) {
+            it->second(event);
+          }
+        }
+        for(const auto& [eventType, eventCallback] : eventCallbacks) {
           if(event.type == eventType) {
             eventCallback(event);
             break;

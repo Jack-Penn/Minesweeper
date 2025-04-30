@@ -26,6 +26,7 @@ private:
     unsigned short _size;
 
     sf::Sprite _tile;
+    sf::Sprite _flag;
     sf::Sprite _overlay;
     void _setNumberOverlay();
     bool _isRevealed = false;

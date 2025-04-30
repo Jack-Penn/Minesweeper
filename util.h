@@ -3,8 +3,6 @@
 #include <random>
 #include <SFML/Graphics.hpp>
 
-extern std::mt19937 number_generator;
-
 sf::Vector2f randomVector(float minMag, float maxMag, float minAngle, float maxAngle);
 sf::Vector2f randomVector(float minMag, float maxMag, const std::vector<std::pair<float, float>>& angleRanges);
 
@@ -14,3 +12,7 @@ T nonuniformScale(T vec1, T vec2) {
 }
 
 void setTextCenter(sf::Text &text, float x, float y);
+
+int timeToMilliseconds(const std::string& time);
+
+extern std::mt19937 number_generator;

@@ -8,7 +8,7 @@
 
 class LeaderboardWindow final : public Window {
   public:
-  	LeaderboardWindow(const int width, const int height, const sf::Font& font)
+  	LeaderboardWindow(const int width, const int height, const sf::Font& font, int leaderboardIndex)
   : Window(width, height, sf::Color::Blue, "Leaderboard", "crown.png", {}), _titleText("LEADERBOARD", font, 20) {
       _titleText.setStyle(sf::Text::Bold | sf::Text::Underlined);
       setTextCenter(_titleText, width/2, height/2 - 120);
@@ -23,7 +23,9 @@ class LeaderboardWindow final : public Window {
         std::string line;
         while (std::getline(LeaderboardFile, line)) {
           const int breakIndex = line.find(",");
-          contentString += std::to_string(++rank) + ".\t" + line.substr(0, breakIndex) + "\t" + line.substr(breakIndex+2) + "\n";
+          std::string name = line.substr(breakIndex+2);
+          contentString += std::to_string(rank +1) + ".\t" + line.substr(0, breakIndex) + "\t" + line.substr(breakIndex+2) + (rank == leaderboardIndex ? "*" : "") + "\n";
+          rank++;
         }
         LeaderboardFile.close();
       }
